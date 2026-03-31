@@ -1,24 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FaUser, FaShoppingBag, FaHeart, FaLeaf, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatters';
+import { useAuth } from '../hooks/useAuth';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('orders');
-  
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const userData = localStorage.getItem('user');
-    
-    if (!isLoggedIn) {
-      navigate('/login');
-    } else {
-      setUser(JSON.parse(userData));
-    }
-  }, [navigate]);
   
   // Mock orders data
   const orders = [

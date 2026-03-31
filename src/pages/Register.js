@@ -3,6 +3,8 @@ import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
 import { FaLeaf, FaUser, FaEnvelope, FaLock, FaPhone } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authService } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +16,9 @@ const Register = () => {
     userType: 'customer'
   });
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -23,8 +27,9 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
     if (!formData.name || !formData.email || !formData.phone || !formData.password) {
       setError('Please fill in all fields');
@@ -40,16 +45,32 @@ const Register = () => {
       setError('Password must be at least 6 characters');
       return;
     }
-    
-    // Demo registration - In production, this would be an API call
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('user', JSON.stringify({ 
-      email: formData.email, 
-      name: formData.name,
-      userType: formData.userType 
-    }));
-    toast.success('Registration successful!');
-    navigate('/');
+
+    try {
+      setSubmitting(true);
+
+      const response = await authService.register({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        userType: formData.userType
+      });
+
+      register(response.user, response.token);
+      toast.success(response.message || 'Registration successful');
+
+      if (response.user?.userType === 'farmer') {
+        navigate('/dashboard');
+        return;
+      }
+
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -178,8 +199,8 @@ const Register = () => {
                   </div>
                 </Form.Group>
                 
-                <Button type="submit" className="btn-organic w-100 py-2 mb-3">
-                  Create Account
+                <Button type="submit" className="btn-organic w-100 py-2 mb-3" disabled={submitting}>
+                  {submitting ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </Form>
               

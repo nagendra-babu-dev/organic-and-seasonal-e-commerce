@@ -3,35 +3,43 @@ import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
 import { FaLeaf, FaEnvelope, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authService } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Simple validation
+    setError('');
+
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
-    
-    // Demo login - In production, this would be an API call
-    if (email === 'demo@organic.com' && password === 'password') {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('user', JSON.stringify({ email, name: 'Demo User' }));
-      toast.success('Login successful!');
+
+    try {
+      setSubmitting(true);
+      const response = await authService.login(email, password);
+
+      login(response.user, response.token);
+      toast.success(response.message || 'Login successful');
+
+      if (response.user?.userType === 'farmer') {
+        navigate('/dashboard');
+        return;
+      }
+
       navigate('/');
-    } else if (email === 'farmer@organic.com' && password === 'farmer') {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('user', JSON.stringify({ email, name: 'Demo Farmer', role: 'farmer' }));
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    } else {
-      setError('Invalid email or password');
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -78,8 +86,8 @@ const Login = () => {
                   </div>
                 </Form.Group>
                 
-                <Button type="submit" className="btn-organic w-100 py-2 mb-3">
-                  Sign In
+                <Button type="submit" className="btn-organic w-100 py-2 mb-3" disabled={submitting}>
+                  {submitting ? 'Signing In...' : 'Sign In'}
                 </Button>
                 
                 <div className="text-center">
@@ -98,9 +106,6 @@ const Login = () => {
                     Sign Up
                   </Link>
                 </p>
-                <small className="text-muted mt-2 d-block">
-                  Demo: demo@organic.com / password
-                </small>
               </div>
             </Card.Body>
           </Card>

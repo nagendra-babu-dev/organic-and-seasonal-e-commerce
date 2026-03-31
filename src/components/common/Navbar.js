@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Badge } from 'react-bootstrap';
 import { FaShoppingCart, FaUser, FaLeaf, FaSeedling } from 'react-icons/fa';
+import { useAuth } from '../../hooks/useAuth';
+import { authService } from '../../services/authService';
 
 const Navbar = ({ cartCount }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const { isAuthenticated, logout } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
+  const handleLogout = async () => {
+    await authService.logout();
+    logout();
     navigate('/');
     setExpanded(false);
   };
@@ -45,7 +47,7 @@ const Navbar = ({ cartCount }) => {
               )}
             </Nav.Link>
             
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
                 <Nav.Link as={Link} to="/dashboard" onClick={() => setExpanded(false)}>
                   <FaUser size={20} />
