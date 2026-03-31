@@ -1,0 +1,278 @@
+/* Extra Large Devices (Large Desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Large Devices (Desktops, 992px to 1199px) */
+@media (max-width: 1199.98px) {
+  .display-1 {
+    font-size: 4rem;
+  }
+  .display-2 {
+    font-size: 3.5rem;
+  }
+  .display-3 {
+    font-size: 3rem;
+  }
+  .display-4 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Medium Devices (Tablets, 768px to 991px) */
+@media (max-width: 991.98px) {
+  .navbar-custom {
+    padding: 0.75rem 0;
+  }
+  
+  .hero-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+  
+  .hero-section h1 {
+    font-size: 2.5rem;
+  }
+  
+  .display-1 {
+    font-size: 3rem;
+  }
+  .display-2 {
+    font-size: 2.75rem;
+  }
+  .display-3 {
+    font-size: 2.5rem;
+  }
+  .display-4 {
+    font-size: 2rem;
+  }
+  
+  .product-card {
+    margin-bottom: 1rem;
+  }
+
+  .product-card__body {
+    min-height: auto;
+  }
+  
+  .seasonal-card__title {
+    min-height: auto;
+  }
+  
+  .cart-table {
+    font-size: 0.9rem;
+  }
+  
+  .sidebar-filters {
+    position: static;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Small Devices (Phones, 576px to 767px) */
+@media (max-width: 767.98px) {
+  .navbar-brand-custom {
+    font-size: 1.25rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-section .lead {
+    font-size: 1rem;
+  }
+  
+  .display-1 {
+    font-size: 2.5rem;
+  }
+  .display-2 {
+    font-size: 2.25rem;
+  }
+  .display-3 {
+    font-size: 2rem;
+  }
+  .display-4 {
+    font-size: 1.75rem;
+  }
+  
+  .btn {
+    padding: 8px 20px;
+    font-size: 0.875rem;
+  }
+  
+  .btn-lg {
+    padding: 10px 24px;
+    font-size: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .product-card .card-title {
+    font-size: 1rem;
+  }
+
+  .product-card__footer {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .product-card__cta {
+    width: auto;
+    min-width: 7rem;
+    height: 2.6rem;
+    padding: 0 0.95rem;
+    font-size: 0.88rem;
+  }
+  
+  .cart-table thead {
+    display: none;
+  }
+  
+  .cart-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1rem;
+  }
+  
+  .cart-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 0.5rem 0;
+  }
+  
+  .cart-table tbody td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 1rem;
+  }
+  
+  .checkout-form {
+    padding: 1rem;
+  }
+
+  .seasonal-card {
+    padding: 1.25rem 0.9rem;
+  }
+
+  .seasonal-card__image-wrap {
+    width: 96px;
+    height: 96px;
+  }
+  
+  .footer {
+    text-align: center;
+  }
+  
+  .footer .social-links {
+    justify-content: center;
+  }
+}
+
+/* Extra Small Devices (Phones, less than 576px) */
+@media (max-width: 575.98px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 1.75rem;
+  }
+  
+  .display-1 {
+    font-size: 2rem;
+  }
+  .display-2 {
+    font-size: 1.75rem;
+  }
+  .display-3 {
+    font-size: 1.5rem;
+  }
+  .display-4 {
+    font-size: 1.25rem;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    padding: 6px 16px;
+    font-size: 0.8rem;
+  }
+  
+  .btn-lg {
+    padding: 8px 20px;
+    font-size: 0.875rem;
+  }
+  
+  .seasonal-badge,
+  .organic-badge {
+    font-size: 0.65rem;
+    padding: 4px 10px;
+  }
+
+  .product-card__badges {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    gap: 0.35rem;
+  }
+
+  .seasonal-badge,
+  .organic-badge {
+    max-width: calc(50% - 0.175rem);
+  }
+  
+  .product-card .btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  .toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .navbar,
+  .footer,
+  .btn,
+  .cart-actions {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+}
