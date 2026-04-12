@@ -1,43 +1,117 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHeart, FaLeaf, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { formatPrice } from '../utils/formatters';
+import { FaUser, FaShoppingBag, FaHeart, FaLeaf, FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { formatDate, formatPrice } from '../utils/formatters';
 import { useAuth } from '../hooks/useAuth';
+import { orderService } from '../services/orderService';
+import { userService } from '../services/userService';
+import { productService } from '../services/productService';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('orders');
-  
-  // Mock orders data
-  const orders = [
-    { id: 'ORD-001', date: '2024-01-15', total: 18.6, status: 'Delivered', items: 3 },
-    { id: 'ORD-002', date: '2024-01-22', total: 27.4, status: 'Shipped', items: 5 },
-    { id: 'ORD-003', date: '2024-01-28', total: 12.8, status: 'Processing', items: 2 },
-  ];
-  
-  // Mock wishlist data
-  const wishlist = [
-    { id: 1, name: 'Organic Heirloom Tomatoes', price: 2.4, image: 'https://images.pexels.com/photos/533280/pexels-photo-533280.jpeg?auto=compress&cs=tinysrgb&w=600' },
-    { id: 3, name: 'Organic Alphonso Mangoes', price: 4.8, image: 'https://images.unsplash.com/photo-1744087180144-bab664b51900?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8YWxwaG9uc28lMjBtYW5nb3xlbnwwfHwwfHx8MA%3D%3D&ixlib=rb-4.1.0&q=60&w=1200' },
-  ];
-  
-  // Mock farmer products (if user is farmer)
-  const farmerProducts = [
-    { id: 1, name: 'Organic Spinach', price: 1.6, stock: 50, status: 'Active' },
-    { id: 2, name: 'Organic Carrots', price: 1.3, stock: 30, status: 'Active' },
-  ];
-  
+  const [orders, setOrders] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [farmerProducts, setFarmerProducts] = useState([]);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [busyKey, setBusyKey] = useState('');
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const [ordersData, wishlistData] = await Promise.all([
+          orderService.getOrders(),
+          userService.getWishlist()
+        ]);
+
+        setOrders(ordersData);
+        setWishlist(wishlistData);
+
+        if (user?.userType === 'farmer') {
+          const farmerProductsData = await productService.getMyProducts();
+          setFarmerProducts(farmerProductsData);
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    };
+
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user]);
+
   const getStatusBadge = (status) => {
     const variants = {
-      'Delivered': 'success',
-      'Shipped': 'info',
-      'Processing': 'warning',
-      'Cancelled': 'danger'
+      delivered: 'success',
+      shipped: 'info',
+      processing: 'warning',
+      pending: 'secondary',
+      cancelled: 'danger'
     };
-    return <Badge bg={variants[status]}>{status}</Badge>;
+    const normalizedStatus = (status || '').toLowerCase();
+    return <Badge bg={variants[normalizedStatus] || 'secondary'}>{status}</Badge>;
   };
-  
+
+  const handleViewOrder = async (orderId) => {
+    if (selectedOrderId === orderId) {
+      setSelectedOrderId(null);
+      setSelectedOrder(null);
+      return;
+    }
+
+    try {
+      setBusyKey(`order-${orderId}`);
+      const order = await orderService.getOrderById(orderId);
+      setSelectedOrderId(orderId);
+      setSelectedOrder(order);
+    } catch (error) {
+      toast.error(error.message || 'Failed to load order details');
+    } finally {
+      setBusyKey('');
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      setBusyKey(`cancel-${orderId}`);
+      await orderService.cancelOrder(orderId);
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === orderId ? { ...order, status: 'cancelled' } : order
+        )
+      );
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder((current) => current ? { ...current, status: 'cancelled' } : current);
+      }
+      toast.success('Order cancelled successfully');
+    } catch (error) {
+      toast.error(error.message || 'Failed to cancel order');
+    } finally {
+      setBusyKey('');
+    }
+  };
+
+  const handleToggleProductStatus = async (product) => {
+    try {
+      setBusyKey(`product-${product.id}`);
+      const response = await productService.updateProduct(product.id, {
+        is_active: product.is_active ? 0 : 1
+      });
+      setFarmerProducts((current) =>
+        current.map((item) => (item.id === product.id ? response.product : item))
+      );
+      toast.success(`Product marked as ${product.is_active ? 'inactive' : 'active'}`);
+    } catch (error) {
+      toast.error(error.message || 'Failed to update product');
+    } finally {
+      setBusyKey('');
+    }
+  };
+
   if (!user) {
     return (
       <Container className="py-5 text-center">
@@ -47,7 +121,7 @@ const Dashboard = () => {
       </Container>
     );
   }
-  
+
   return (
     <Container className="py-5">
       <Row>
@@ -60,22 +134,22 @@ const Dashboard = () => {
               <h5 className="fw-bold mb-1">{user.name}</h5>
               <p className="text-muted small mb-2">{user.email}</p>
               <Badge bg={user.userType === 'farmer' ? 'success' : 'info'} className="px-3 py-2">
-                {user.userType === 'farmer' ? '🌾 Farmer' : '👤 Customer'}
+                {user.userType === 'farmer' ? 'Farmer' : 'Customer'}
               </Badge>
             </Card.Body>
           </Card>
-          
+
           <Card className="border-0 shadow-sm rounded-4">
             <Card.Body className="p-3">
               <div className="d-flex flex-column gap-2">
-                <Button 
+                <Button
                   variant={activeTab === 'orders' ? 'success' : 'light'}
                   className="text-start d-flex align-items-center gap-2"
                   onClick={() => setActiveTab('orders')}
                 >
                   <FaShoppingBag /> My Orders
                 </Button>
-                <Button 
+                <Button
                   variant={activeTab === 'wishlist' ? 'success' : 'light'}
                   className="text-start d-flex align-items-center gap-2"
                   onClick={() => setActiveTab('wishlist')}
@@ -83,7 +157,7 @@ const Dashboard = () => {
                   <FaHeart /> Wishlist
                 </Button>
                 {user.userType === 'farmer' && (
-                  <Button 
+                  <Button
                     variant={activeTab === 'products' ? 'success' : 'light'}
                     className="text-start d-flex align-items-center gap-2"
                     onClick={() => setActiveTab('products')}
@@ -95,7 +169,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        
+
         <Col lg={9}>
           <Card className="border-0 shadow-sm rounded-4">
             <Card.Body className="p-4">
@@ -111,30 +185,71 @@ const Dashboard = () => {
                           <th>Items</th>
                           <th>Total</th>
                           <th>Status</th>
-                          <th></th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {orders.map(order => (
+                        {orders.map((order) => (
                           <tr key={order.id}>
-                            <td className="fw-bold">#{order.id}</td>
-                            <td>{order.date}</td>
-                            <td>{order.items} items</td>
-                            <td>{formatPrice(order.total)}</td>
+                            <td className="fw-bold">#{order.order_number || order.id}</td>
+                            <td>{formatDate(order.created_at)}</td>
+                            <td>{order.item_count} items</td>
+                            <td>{formatPrice(order.final_amount)}</td>
                             <td>{getStatusBadge(order.status)}</td>
-                            <td>
-                              <Button variant="outline-success" size="sm">
-                                View Details
+                            <td className="d-flex gap-2">
+                              <Button
+                                variant="outline-success"
+                                size="sm"
+                                onClick={() => handleViewOrder(order.id)}
+                                disabled={busyKey === `order-${order.id}`}
+                              >
+                                {selectedOrderId === order.id ? 'Hide' : 'View'}
                               </Button>
+                              {['pending', 'processing'].includes((order.status || '').toLowerCase()) && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  disabled={busyKey === `cancel-${order.id}`}
+                                >
+                                  Cancel
+                                </Button>
+                              )}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </Table>
                   </div>
+
+                  {selectedOrder && (
+                    <Card className="border-0 bg-light mt-4">
+                      <Card.Body>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h5 className="fw-bold mb-0">Order Details</h5>
+                          {getStatusBadge(selectedOrder.status)}
+                        </div>
+                        <p className="text-muted mb-2">
+                          Order #{selectedOrder.order_number || selectedOrder.id} • {formatDate(selectedOrder.created_at)}
+                        </p>
+                        <div className="mb-3">
+                          {(selectedOrder.items || []).map((item) => (
+                            <div key={item.id} className="d-flex justify-content-between py-2 border-bottom">
+                              <span>{item.product_name} x {item.quantity}</span>
+                              <span>{formatPrice(item.total)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span className="fw-semibold">Total</span>
+                          <span className="fw-bold text-success">{formatPrice(selectedOrder.final_amount)}</span>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  )}
                 </>
               )}
-              
+
               {activeTab === 'wishlist' && (
                 <>
                   <h4 className="fw-bold mb-4">My Wishlist</h4>
@@ -148,7 +263,7 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <Row>
-                      {wishlist.map(item => (
+                      {wishlist.map((item) => (
                         <Col md={6} key={item.id} className="mb-3">
                           <Card className="border-0 shadow-sm">
                             <Card.Body className="d-flex align-items-center gap-3">
@@ -157,7 +272,18 @@ const Dashboard = () => {
                                 <h6 className="mb-1 fw-bold">{item.name}</h6>
                                 <p className="text-success fw-bold mb-0">{formatPrice(item.price)}</p>
                               </div>
-                              <Button variant="outline-danger" size="sm">
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await userService.removeFromWishlist(item.product_id || item.id);
+                                    setWishlist((current) => current.filter((wishlistItem) => wishlistItem.id !== item.id));
+                                  } catch (error) {
+                                    toast.error(error.message || 'Failed to remove item');
+                                  }
+                                }}
+                              >
                                 Remove
                               </Button>
                             </Card.Body>
@@ -168,14 +294,11 @@ const Dashboard = () => {
                   )}
                 </>
               )}
-              
+
               {activeTab === 'products' && user.userType === 'farmer' && (
                 <>
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <h4 className="fw-bold mb-0">My Products</h4>
-                    <Button className="btn-organic">
-                      <FaPlus className="me-2" /> Add New Product
-                    </Button>
                   </div>
                   <div className="table-responsive">
                     <Table className="align-middle">
@@ -189,17 +312,34 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {farmerProducts.map(product => (
+                        {farmerProducts.map((product) => (
                           <tr key={product.id}>
                             <td className="fw-bold">{product.name}</td>
                             <td>{formatPrice(product.price)}</td>
                             <td>{product.stock} units</td>
-                            <td><Badge bg="success">{product.status}</Badge></td>
-                            <td>
-                              <Button variant="outline-primary" size="sm" className="me-2">
-                                <FaEdit />
+                            <td><Badge bg={product.is_active ? 'success' : 'secondary'}>{product.is_active ? 'Active' : 'Inactive'}</Badge></td>
+                            <td className="d-flex gap-2">
+                              <Button
+                                variant={product.is_active ? 'outline-secondary' : 'outline-success'}
+                                size="sm"
+                                onClick={() => handleToggleProductStatus(product)}
+                                disabled={busyKey === `product-${product.id}`}
+                              >
+                                {product.is_active ? 'Deactivate' : 'Activate'}
                               </Button>
-                              <Button variant="outline-danger" size="sm">
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await productService.deleteProduct(product.id);
+                                    setFarmerProducts((current) => current.filter((item) => item.id !== product.id));
+                                    toast.success('Product deleted successfully');
+                                  } catch (error) {
+                                    toast.error(error.message || 'Failed to delete product');
+                                  }
+                                }}
+                              >
                                 <FaTrash />
                               </Button>
                             </td>
