@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from './apiAdapters';
 
 export const SEASONS = [
   { id: 'spring', name: 'Spring', months: ['March', 'April', 'May'], icon: '🌸' },
@@ -16,8 +16,8 @@ export const CATEGORIES = [
   { id: 'dairy', name: 'Dairy', icon: '🥛', count: 8 }
 ];
 
-export const DELIVERY_CHARGE = 4;
-export const FREE_DELIVERY_THRESHOLD = 40;
+export const DELIVERY_CHARGE = 50;
+export const FREE_DELIVERY_THRESHOLD = 500;
 
 export const ORDER_STATUS = {
   PENDING: 'pending',
