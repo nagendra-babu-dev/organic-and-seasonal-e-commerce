@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Badge } from 'react-bootstrap';
 import { FaShoppingCart, FaUser, FaLeaf, FaSeedling } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
+import { useCart } from '../../hooks/useCart';
 import { authService } from '../../services/authService';
 
-const Navbar = ({ cartCount }) => {
+const Navbar = () => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
+  const { cartCount } = useCart();
 
   const handleLogout = async () => {
     await authService.logout();

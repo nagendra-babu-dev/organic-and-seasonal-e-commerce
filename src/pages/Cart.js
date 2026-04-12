@@ -3,10 +3,12 @@ import { Container, Row, Col, Table, Button, Form, Card } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useCart } from '../hooks/useCart';
 import { formatPrice, calculateDeliveryCharge } from '../utils/formatters';
 
-const Cart = ({ cart, updateQuantity, removeFromCart, cartTotal }) => {
+const Cart = () => {
   const navigate = useNavigate();
+  const { cart, updateQuantity, removeFromCart, cartTotal } = useCart();
 
   const handleCheckout = () => {
     if (cart.length === 0) {

@@ -35,8 +35,8 @@ export const truncateText = (text, length = 100) => {
   return text.substring(0, length) + '...';
 };
 
-export const calculateDeliveryCharge = (total, threshold = 40) => {
-  return total >= threshold ? 0 : 4;
+export const calculateDeliveryCharge = (total, threshold = 500) => {
+  return total >= threshold ? 0 : 50;
 };
 
 export const calculateDiscount = (originalPrice, discountedPrice) => {

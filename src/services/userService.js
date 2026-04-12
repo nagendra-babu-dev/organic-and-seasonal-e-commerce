@@ -1,10 +1,11 @@
 import api from './api';
+import { normalizeProduct, normalizeUser } from '../utils/apiAdapters';
 
 export const userService = {
   getProfile: async () => {
     try {
       const response = await api.get('/users/profile');
-      return response.data;
+      return normalizeUser(response.data);
     } catch (error) {
       throw error.response?.data || { message: 'Failed to fetch profile' };
     }
@@ -13,7 +14,10 @@ export const userService = {
   updateProfile: async (userData) => {
     try {
       const response = await api.put('/users/profile', userData);
-      return response.data;
+      return {
+        ...response.data,
+        user: normalizeUser(response.data.user)
+      };
     } catch (error) {
       throw error.response?.data || { message: 'Failed to update profile' };
     }
@@ -22,7 +26,7 @@ export const userService = {
   getWishlist: async () => {
     try {
       const response = await api.get('/users/wishlist');
-      return response.data;
+      return response.data.map(normalizeProduct);
     } catch (error) {
       throw error.response?.data || { message: 'Failed to fetch wishlist' };
     }

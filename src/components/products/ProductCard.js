@@ -2,19 +2,16 @@ import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { FaLeaf, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useCart } from '../../hooks/useCart';
 import { formatPrice } from '../../utils/formatters';
 
-const ProductCard = ({ product, addToCart }) => {
+const ProductCard = ({ product }) => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
-    addToCart(product);
-    toast.success(`${product.name} added to cart!`, {
-      position: "bottom-right",
-      autoClose: 2000,
-    });
+    await addToCart(product);
   };
 
   return (
@@ -28,7 +25,7 @@ const ProductCard = ({ product, addToCart }) => {
         <div className="product-card__badges">
           {product.seasonal && (
             <div className="seasonal-badge">
-              🌿 {product.season} Seasonal
+              {product.season} Seasonal
             </div>
           )}
           {product.organic && (
