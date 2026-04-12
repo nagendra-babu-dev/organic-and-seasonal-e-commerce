@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAuth } from '../hooks/useAuth';
+import { useCart } from '../hooks/useCart';
+import EmptyState from '../components/common/EmptyState';
+import { orderService } from '../services/orderService';
 import { formatPrice, calculateDeliveryCharge } from '../utils/formatters';
 
-const Checkout = ({ cart, cartTotal }) => {
+const Checkout = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { cart, cartTotal, refreshCart } = useCart();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +23,22 @@ const Checkout = ({ cart, cartTotal }) => {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      address: user.address || '',
+      city: user.city || '',
+      pincode: user.pincode || ''
+    }));
+  }, [user]);
+
   const deliveryCharge = calculateDeliveryCharge(cartTotal);
   const finalTotal = cartTotal + deliveryCharge;
 
@@ -27,21 +49,38 @@ const Checkout = ({ cart, cartTotal }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    
-    // Simulate order placement
-    setTimeout(() => {
+
+    try {
+      const response = await orderService.createOrder({
+        paymentMethod: formData.paymentMethod,
+        shippingAddress: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        phone: formData.phone
+      });
+
+      await refreshCart();
       toast.success('Order placed successfully!');
-      localStorage.removeItem('cart');
-      navigate('/');
-    }, 1500);
+      navigate('/order-confirmation', { state: { order: response.order } });
+    } catch (error) {
+      toast.error(error.message || 'Failed to place order');
+    } finally {
+      setSubmitted(false);
+    }
   };
 
   if (cart.length === 0) {
-    navigate('/cart');
-    return null;
+    return (
+      <EmptyState
+        title="Your cart is empty"
+        description="Add a few products before heading to checkout."
+        actionLabel="Go to Cart"
+        actionTo="/cart"
+      />
+    );
   }
 
   return (
@@ -162,7 +201,7 @@ const Checkout = ({ cart, cartTotal }) => {
                 </Form.Group>
                 
                 <Alert variant="success" className="mt-3">
-                  <strong>🌱 Farm Fresh Promise:</strong> All products are delivered within 24 hours of harvest!
+                  <strong>Farm Fresh Promise:</strong> All products are delivered within 24 hours of harvest.
                 </Alert>
                 
                 <Button 

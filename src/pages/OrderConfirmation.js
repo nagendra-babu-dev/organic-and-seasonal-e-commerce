@@ -1,17 +1,23 @@
 import React from 'react';
 import { Container, Card, Button } from 'react-bootstrap';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
+import EmptyState from '../components/common/EmptyState';
 import { formatPrice, formatDate } from '../utils/formatters';
 
 const OrderConfirmation = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const order = location.state?.order;
 
   if (!order) {
-    navigate('/');
-    return null;
+    return (
+      <EmptyState
+        title="No order to show"
+        description="Place an order first or check your dashboard for recent purchases."
+        actionLabel="Go to Dashboard"
+        actionTo="/dashboard"
+      />
+    );
   }
 
   return (
@@ -25,11 +31,11 @@ const OrderConfirmation = () => {
         
         <div className="bg-light rounded-4 p-4 mb-4 text-start">
           <h5 className="fw-bold mb-3">Order Details</h5>
-          <p><strong>Order ID:</strong> #{order.id}</p>
-          <p><strong>Date:</strong> {formatDate(order.date)}</p>
-          <p><strong>Total Amount:</strong> {formatPrice(order.total)}</p>
-          <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
-          <p><strong>Delivery Address:</strong> {order.address}</p>
+          <p><strong>Order ID:</strong> #{order.order_number || order.id}</p>
+          <p><strong>Date:</strong> {formatDate(order.created_at || new Date())}</p>
+          <p><strong>Total Amount:</strong> {formatPrice(order.final_amount || order.total_amount || 0)}</p>
+          <p><strong>Payment Method:</strong> {order.payment_method || order.paymentMethod}</p>
+          <p><strong>Delivery Address:</strong> {order.shipping_address || order.address}</p>
         </div>
         
         <div className="d-flex gap-3 justify-content-center">
