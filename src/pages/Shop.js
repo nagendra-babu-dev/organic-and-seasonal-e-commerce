@@ -1,57 +1,77 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, InputGroup, Badge } from 'react-bootstrap';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Container, Row, Col, Form, Button, InputGroup, Badge, Pagination } from 'react-bootstrap';
 import { FaSearch, FaFilter, FaLeaf } from 'react-icons/fa';
 import ProductCard from '../components/products/ProductCard';
-import { products } from '../data/products';
+import { productService } from '../services/productService';
 
-const Shop = ({ addToCart }) => {
+const Shop = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 10]);
+  const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortBy, setSortBy] = useState('featured');
-  const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, limit: 12 });
 
   const seasons = ['all', 'Spring', 'Summer', 'Monsoon', 'Autumn', 'Winter'];
-  const categories = ['all', 'vegetables', 'fruits', 'herbs', 'grains', 'dairy'];
 
-  let filteredProducts = [...products];
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+      setPage(1);
+    }, 400);
 
-  // Search filter
-  if (searchTerm) {
-    filteredProducts = filteredProducts.filter(p => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
 
-  // Season filter
-  if (selectedSeason !== 'all') {
-    filteredProducts = filteredProducts.filter(p => p.season === selectedSeason);
-  }
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
 
-  // Category filter
-  if (selectedCategory !== 'all') {
-    filteredProducts = filteredProducts.filter(p => p.category === selectedCategory);
-  }
+        const sortMap = {
+          featured: { sort: 'rating', order: 'DESC' },
+          newest: { sort: 'created_at', order: 'DESC' },
+          rating: { sort: 'rating', order: 'DESC' },
+          'price-low': { sort: 'price', order: 'ASC' },
+          'price-high': { sort: 'price', order: 'DESC' }
+        };
 
-  // Price filter
-  filteredProducts = filteredProducts.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+        const response = await productService.getProducts({
+          search: searchTerm || undefined,
+          season: selectedSeason,
+          category: selectedCategory,
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1],
+          page,
+          limit: 9,
+          ...sortMap[sortBy]
+        });
 
-  // Sort
-  if (sortBy === 'price-low') {
-    filteredProducts.sort((a, b) => a.price - b.price);
-  } else if (sortBy === 'price-high') {
-    filteredProducts.sort((a, b) => b.price - a.price);
-  } else if (sortBy === 'rating') {
-    filteredProducts.sort((a, b) => b.rating - a.rating);
-  } else if (sortBy === 'newest') {
-    filteredProducts.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
-  }
+        setProducts(response.products || []);
+        setPagination(response.pagination || { page: 1, pages: 1, total: 0, limit: 9 });
+      } catch (error) {
+        console.error('Failed to load products:', error);
+        setProducts([]);
+        setPagination({ page: 1, pages: 1, total: 0, limit: 9 });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [page, priceRange, searchTerm, selectedSeason, selectedCategory, sortBy]);
+
+  const categories = useMemo(() => {
+    const dynamicCategories = [...new Set(products.map((product) => product.category).filter(Boolean))];
+    return ['all', ...dynamicCategories];
+  }, [products]);
 
   return (
     <>
-      {/* Hero Banner */}
       <section className="bg-success bg-opacity-10 py-5">
         <Container>
           <div className="text-center">
@@ -63,17 +83,22 @@ const Shop = ({ addToCart }) => {
 
       <Container className="py-5">
         <Row>
-          {/* Filters Sidebar */}
           <Col lg={3} className="mb-4">
             <div className="bg-white rounded-4 p-4 shadow-sm sticky-top" style={{ top: '100px' }}>
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h5 className="fw-bold mb-0"><FaFilter className="me-2" /> Filters</h5>
-                <Button variant="link" className="text-success p-0" onClick={() => {
-                  setSelectedSeason('all');
-                  setSelectedCategory('all');
-                  setPriceRange([0, 10]);
-                  setSearchTerm('');
-                }}>
+                <Button
+                  variant="link"
+                  className="text-success p-0"
+                  onClick={() => {
+                    setSelectedSeason('all');
+                    setSelectedCategory('all');
+                    setPriceRange([0, 100]);
+                    setSearchInput('');
+                    setSearchTerm('');
+                    setPage(1);
+                  }}
+                >
                   Reset All
                 </Button>
               </div>
@@ -81,12 +106,15 @@ const Shop = ({ addToCart }) => {
               <div className="mb-4">
                 <label className="fw-semibold mb-2">Seasonal Availability</label>
                 <div className="d-flex flex-wrap gap-2">
-                  {seasons.map(season => (
+                  {seasons.map((season) => (
                     <Button
                       key={season}
                       variant={selectedSeason === season ? 'success' : 'outline-success'}
                       size="sm"
-                      onClick={() => setSelectedSeason(season)}
+                      onClick={() => {
+                        setSelectedSeason(season);
+                        setPage(1);
+                      }}
                       className="rounded-pill"
                     >
                       {season === 'all' ? 'All Seasons' : season}
@@ -97,14 +125,17 @@ const Shop = ({ addToCart }) => {
 
               <div className="mb-4">
                 <label className="fw-semibold mb-2">Categories</label>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <Form.Check
                     key={category}
                     type="radio"
                     label={category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                     name="category"
                     checked={selectedCategory === category}
-                    onChange={() => setSelectedCategory(category)}
+                    onChange={() => {
+                      setSelectedCategory(category);
+                      setPage(1);
+                    }}
                     className="mb-2"
                   />
                 ))}
@@ -117,27 +148,35 @@ const Shop = ({ addToCart }) => {
                     type="number"
                     placeholder="Min"
                     value={priceRange[0]}
-                    onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                    onChange={(e) => {
+                      setPriceRange([Number(e.target.value), priceRange[1]]);
+                      setPage(1);
+                    }}
                   />
                   <Form.Control
                     type="number"
                     placeholder="Max"
                     value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                    onChange={(e) => {
+                      setPriceRange([priceRange[0], Number(e.target.value)]);
+                      setPage(1);
+                    }}
                   />
                 </div>
                 <Form.Range
                   min={0}
-                  max={10}
-                  step={0.1}
+                  max={100}
+                  step={1}
                   value={priceRange[1]}
-                  onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                  onChange={(e) => {
+                    setPriceRange([priceRange[0], Number(e.target.value)]);
+                    setPage(1);
+                  }}
                 />
               </div>
             </div>
           </Col>
 
-          {/* Products Grid */}
           <Col lg={9}>
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
               <InputGroup style={{ maxWidth: '300px' }}>
@@ -146,15 +185,18 @@ const Shop = ({ addToCart }) => {
                 </InputGroup.Text>
                 <Form.Control
                   placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                 />
               </InputGroup>
 
               <div className="d-flex gap-2">
-                <Form.Select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
+                <Form.Select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setPage(1);
+                  }}
                   style={{ width: '180px' }}
                 >
                   <option value="featured">Featured</option>
@@ -163,36 +205,54 @@ const Shop = ({ addToCart }) => {
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Top Rated</option>
                 </Form.Select>
-
-                <Button 
-                  variant="outline-success" 
-                  className="d-lg-none"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <FaFilter />
-                </Button>
               </div>
             </div>
 
             <div className="mb-3">
-              <Badge bg="success" className="me-2">Showing {filteredProducts.length} products</Badge>
+              <Badge bg="success" className="me-2">
+                Showing {products.length} of {pagination.total} products
+              </Badge>
               {selectedSeason !== 'all' && <Badge bg="warning" className="me-2">{selectedSeason} Seasonal</Badge>}
               {selectedCategory !== 'all' && <Badge bg="info">{selectedCategory}</Badge>}
             </div>
 
             <Row className="g-4">
-              {filteredProducts.map(product => (
+              {products.map((product) => (
                 <Col key={product.id} md={6} xl={4}>
-                  <ProductCard product={product} addToCart={addToCart} />
+                  <ProductCard product={product} />
                 </Col>
               ))}
             </Row>
 
-            {filteredProducts.length === 0 && (
+            {!loading && products.length === 0 && (
               <div className="text-center py-5">
                 <FaLeaf size={64} className="text-muted mb-3" />
                 <h4>No products found</h4>
                 <p className="text-muted">Try adjusting your filters or search terms</p>
+              </div>
+            )}
+
+            {pagination.pages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination>
+                  <Pagination.Prev
+                    disabled={page === 1}
+                    onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                  />
+                  {Array.from({ length: pagination.pages }, (_, index) => index + 1).map((pageNumber) => (
+                    <Pagination.Item
+                      key={pageNumber}
+                      active={pageNumber === page}
+                      onClick={() => setPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next
+                    disabled={page === pagination.pages}
+                    onClick={() => setPage((current) => Math.min(current + 1, pagination.pages))}
+                  />
+                </Pagination>
               </div>
             )}
           </Col>
