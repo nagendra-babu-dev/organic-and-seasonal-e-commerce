@@ -54,7 +54,7 @@ const Contact = () => {
               </div>
               <div>
                 <h6 className="fw-bold mb-1">Our Location</h6>
-                <p className="text-muted mb-0">123 Organic Valley, Pune, Maharashtra, India - 411001</p>
+                <p className="text-muted mb-0">123 Organic Market Lane, Bristol, England BS1 4DJ</p>
               </div>
             </div>
             
@@ -64,8 +64,8 @@ const Contact = () => {
               </div>
               <div>
                 <h6 className="fw-bold mb-1">Phone Number</h6>
-                <p className="text-muted mb-0">+91 98765 43210</p>
-                <p className="text-muted mb-0">+91 98765 43211</p>
+                <p className="text-muted mb-0">+44 20 7946 0958</p>
+                <p className="text-muted mb-0">+44 20 7946 0959</p>
               </div>
             </div>
             
@@ -86,8 +86,8 @@ const Contact = () => {
               </div>
               <div>
                 <h6 className="fw-bold mb-1">Working Hours</h6>
-                <p className="text-muted mb-0">Monday - Friday: 9:00 AM - 7:00 PM</p>
-                <p className="text-muted mb-0">Saturday: 10:00 AM - 5:00 PM</p>
+                <p className="text-muted mb-0">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                <p className="text-muted mb-0">Saturday: 10:00 AM - 4:00 PM</p>
                 <p className="text-muted mb-0">Sunday: Closed</p>
               </div>
             </div>

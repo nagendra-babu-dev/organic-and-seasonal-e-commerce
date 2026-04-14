@@ -193,6 +193,17 @@ body {
   color: transparent;
 }
 
+.navbar-custom .nav-link {
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.navbar-custom .nav-link.navbar-link-active {
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--primary-green) !important;
+  box-shadow: inset 0 0 0 1px rgba(46, 125, 50, 0.18);
+}
+
 /* Hero Section */
 .hero-section {
   background: linear-gradient(135deg, rgba(46, 125, 50, 0.05), rgba(139, 195, 74, 0.1));

@@ -49,11 +49,11 @@ const Footer = () => {
             <ul className="list-unstyled">
               <li className="mb-2 d-flex align-items-center gap-2">
                 <FaMapMarkerAlt className="text-success" />
-                <span className="text-white-50">123 Organic Valley, Pune, India</span>
+                <span className="text-white-50">123 Organic Market Lane, Bristol, UK</span>
               </li>
               <li className="mb-2 d-flex align-items-center gap-2">
                 <FaPhone className="text-success" />
-                <span className="text-white-50">+91 98765 43210</span>
+                <span className="text-white-50">+44 20 7946 0958</span>
               </li>
               <li className="mb-2 d-flex align-items-center gap-2">
                 <FaEnvelope className="text-success" />

@@ -20,8 +20,8 @@ const Home = () => {
                   Delivered to Your Doorstep
                 </h1>
                 <p className="lead mb-4 text-muted">
-                  Connect directly with local farmers. Get 100% certified organic, seasonal produce 
-                  that's fresh, nutritious, and sustainably grown.
+                  Connect directly with local growers. Get 100% certified organic, seasonal produce
+                  that's fresh, nutritious, and sustainably grown across the UK.
                 </p>
                 <div className="d-flex gap-3">
                   <Button as={Link} to="/shop" className="btn-organic btn-lg px-4">
@@ -166,9 +166,9 @@ const features = [
 ];
 
 const testimonials = [
-  { text: 'The quality of organic vegetables is exceptional! I love knowing exactly where my food comes from.', name: 'Priya Sharma', location: 'Mumbai', avatar: 'https://randomuser.me/api/portraits/women/1.jpg' },
-  { text: 'Finally a platform that connects me directly with farmers. The seasonal produce section is my favorite!', name: 'Rahul Mehta', location: 'Delhi', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
-  { text: 'Amazing service! Fresh organic produce delivered right to my doorstep. Highly recommended!', name: 'Anjali Singh', location: 'Bangalore', avatar: 'https://randomuser.me/api/portraits/women/2.jpg' },
+  { text: 'The quality of the organic vegetables is exceptional. I love knowing exactly where my food comes from.', name: 'Sophie Turner', location: 'Bristol', avatar: 'https://randomuser.me/api/portraits/women/1.jpg' },
+  { text: 'Finally a platform that connects me directly with growers. The seasonal produce section is my favourite.', name: 'James Walker', location: 'Manchester', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
+  { text: 'Amazing service. Fresh organic produce delivered right to my doorstep. Highly recommended.', name: 'Amelia Clark', location: 'Birmingham', avatar: 'https://randomuser.me/api/portraits/women/2.jpg' },
 ];
 
 export default Home;

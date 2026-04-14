@@ -127,7 +127,7 @@ const Checkout = () => {
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="Enter your phone number"
+                    placeholder="Enter your UK phone number"
                   />
                 </Form.Group>
                 
@@ -153,18 +153,18 @@ const Checkout = () => {
                       required
                       value={formData.city}
                       onChange={handleChange}
-                      placeholder="City"
+                      placeholder="Town or city"
                     />
                   </Col>
                   <Col md={6}>
-                    <Form.Label>Pincode</Form.Label>
+                    <Form.Label>Postcode</Form.Label>
                     <Form.Control
                       type="text"
                       name="pincode"
                       required
                       value={formData.pincode}
                       onChange={handleChange}
-                      placeholder="Pincode"
+                      placeholder="Postcode"
                     />
                   </Col>
                 </Row>
@@ -192,10 +192,10 @@ const Checkout = () => {
                   />
                   <Form.Check
                     type="radio"
-                    label="UPI (Google Pay, PhonePe, etc.)"
+                    label="Bank Transfer"
                     name="paymentMethod"
-                    value="upi"
-                    checked={formData.paymentMethod === 'upi'}
+                    value="bank_transfer"
+                    checked={formData.paymentMethod === 'bank_transfer'}
                     onChange={handleChange}
                   />
                 </Form.Group>

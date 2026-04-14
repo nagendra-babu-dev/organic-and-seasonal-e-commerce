@@ -76,7 +76,7 @@ const Shop = () => {
         <Container>
           <div className="text-center">
             <h1 className="display-4 fw-bold mb-3">Fresh Organic Produce</h1>
-            <p className="lead">Directly sourced from certified organic farms across India</p>
+            <p className="lead">Directly sourced from trusted organic growers across the UK</p>
           </div>
         </Container>
       </section>

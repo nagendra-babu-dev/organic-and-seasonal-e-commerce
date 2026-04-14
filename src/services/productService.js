@@ -1,6 +1,8 @@
 import api from './api';
 import { normalizeProduct } from '../utils/apiAdapters';
 
+const isFormDataPayload = (value) => typeof FormData !== 'undefined' && value instanceof FormData;
+
 export const productService = {
   getProducts: async (filters = {}) => {
     try {
@@ -43,7 +45,9 @@ export const productService = {
 
   createProduct: async (productData) => {
     try {
-      const response = await api.post('/products', productData);
+      const response = await api.post('/products', productData, isFormDataPayload(productData)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined);
       return {
         ...response.data,
         product: normalizeProduct(response.data.product)
@@ -55,7 +59,9 @@ export const productService = {
 
   updateProduct: async (productId, productData) => {
     try {
-      const response = await api.put(`/products/${productId}`, productData);
+      const response = await api.put(`/products/${productId}`, productData, isFormDataPayload(productData)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined);
       return {
         ...response.data,
         product: normalizeProduct(response.data.product)
@@ -71,6 +77,15 @@ export const productService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Failed to delete product' };
+    }
+  },
+
+  addReview: async (productId, reviewData) => {
+    try {
+      const response = await api.post(`/products/${productId}/review`, reviewData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to submit review' };
     }
   }
 };

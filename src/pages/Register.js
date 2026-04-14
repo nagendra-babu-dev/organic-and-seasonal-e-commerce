@@ -114,7 +114,7 @@ const Register = () => {
                         <Form.Control
                           type="tel"
                           name="phone"
-                          placeholder="Enter phone number"
+                          placeholder="Enter UK phone number"
                           className="ps-5 py-2"
                           value={formData.phone}
                           onChange={handleChange}

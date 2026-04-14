@@ -23,6 +23,15 @@ export const userService = {
     }
   },
 
+  changePassword: async (passwordData) => {
+    try {
+      const response = await api.put('/users/change-password', passwordData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to change password' };
+    }
+  },
+
   getWishlist: async () => {
     try {
       const response = await api.get('/users/wishlist');

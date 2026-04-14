@@ -4,8 +4,9 @@ export const validateEmail = (email) => {
 };
 
 export const validatePhone = (phone) => {
-  const re = /^[6-9]\d{9}$/;
-  return re.test(phone);
+  const normalized = String(phone || '').replace(/[\s()+-]/g, '');
+  const re = /^(?:0\d{10}|44\d{10})$/;
+  return re.test(normalized);
 };
 
 export const validatePassword = (password) => {
@@ -13,8 +14,8 @@ export const validatePassword = (password) => {
 };
 
 export const validatePincode = (pincode) => {
-  const re = /^[1-9][0-9]{5}$/;
-  return re.test(pincode);
+  const re = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+  return re.test(String(pincode || '').trim());
 };
 
 export const validateName = (name) => {

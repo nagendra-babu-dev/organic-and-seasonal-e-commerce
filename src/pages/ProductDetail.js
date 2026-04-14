@@ -2,14 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Badge, Card } from 'react-bootstrap';
 import { FaStar, FaTruck, FaLeaf, FaCalendarAlt, FaMapMarkerAlt, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import { useCart } from '../hooks/useCart';
+import { useAuth } from '../hooks/useAuth';
 import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
 import { productService } from '../services/productService';
+import { userService } from '../services/userService';
 import { formatPrice } from '../utils/formatters';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const { isAuthenticated, user } = useAuth();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
@@ -33,6 +37,25 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     await addToCart(product, quantity);
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to save items to wishlist');
+      return;
+    }
+
+    if (user?.userType === 'farmer') {
+      toast.error('Wishlist is only available for customers');
+      return;
+    }
+
+    try {
+      await userService.addToWishlist(product.id);
+      toast.success('Added to wishlist');
+    } catch (error) {
+      toast.error(error.message || 'Failed to add to wishlist');
+    }
   };
 
   if (loading) {
@@ -96,7 +119,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="d-flex gap-3 text-muted mb-3">
-              <span><FaMapMarkerAlt className="me-1" /> {product.farm}, {product.origin || 'India'}</span>
+              <span><FaMapMarkerAlt className="me-1" /> {product.farm}, {product.origin || 'United Kingdom'}</span>
               <span><FaCalendarAlt className="me-1" /> Fresh Harvest</span>
             </div>
           </div>
@@ -120,7 +143,7 @@ const ProductDetail = () => {
               <Button className="btn-organic flex-grow-1 py-3" onClick={handleAddToCart}>
                 <FaShoppingCart className="me-2" /> Add to Cart
               </Button>
-              <Button variant="outline-danger" className="py-3 px-4">
+              <Button variant="outline-danger" className="py-3 px-4" onClick={handleAddToWishlist}>
                 <FaHeart />
               </Button>
             </div>
